@@ -1,0 +1,50 @@
+Comments: 'Protostar experiment'
+PCA:
+  path: $protostars/sf/exp1/PHOENIX_NIRSPEC_K_PCA_Teff2700-3600.hdf5
+  priors:
+  - [2.0, 0.0075]
+  - [2.0, 0.75]
+  - [2.0, 0.75]
+  threshold: 0.999
+Phi: {l: 20.0, logAmp: -2.0, sigAmp: 1.0}
+Phi_jump: {l: 0.25, logAmp: 0.01, sigAmp: 0.025}
+Theta:
+  Av: 0.0
+  grid: [3200, 3.8, 0.0]
+  logOmega: -0.2
+  veil: 0.1
+  vsini: 29.0
+  vz: 0.0
+Theta_jump:
+  Av: 0.01
+  grid: [3.0, 0.003, 0.001]
+  logOmega: 0.003
+  logOmega2: 0.003
+  veil: 0.01
+  teff2: 3.0
+  vsini: 0.05
+  vz: 0.05
+Theta_priors: $protostars/code/priors/user_prior.py
+cheb_degree: 4
+cheb_jump: 0.0001
+data:
+  files: [$protostars/data/reduced/S68N_NIRSPEC.hdf5]
+  grid_name: PHOENIX
+  instruments: [NIRSPEC_LO_F7]
+  orders: [0]
+grid:
+  buffer: 200.0
+  hdf5_path: $WELTER/sf/exp1/libraries/PHOENIX_TBD.hdf5
+  key_name: t{0:.0f}g{1:.1f}z{2:.1f}
+  parname: [temp, logg, Z]
+  parrange:
+  - [2700, 3600]
+  - [3.0, 4.0]
+  - [-0.5, 0.5]
+  raw_path: $Starfish/libraries/raw/PHOENIX/
+  wl_range: [20600, 24600]
+name: veil1
+outdir: output/
+plotdir: plots/
+region_params: {logAmp: -2.0, sigma: 7.0}
+sigma_clip: 4.0
