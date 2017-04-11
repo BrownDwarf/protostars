@@ -1,0 +1,158 @@
+\documentclass[twocolumn]{emulateapj}% change onecolumn to iop for fancy, iop 
+
+\let\pwiflocal=\iffalse \let\pwifjournal=\iffalse
+\input{mgs_setup}
+
+\newcommand{\iancze}{{\sc C15}}
+
+\providecommand{\eprint}[1]{\href{http://arxiv.org/abs/#1}{#1}}
+\providecommand{\adsurl}[1]{\href{#1}{ADS}}
+\newcommand{\project}[1]{\textsl{#1}}
+
+\slugcomment{In preparation}
+\shorttitle{Class 0 near-IR spectroscopy}
+\shortauthors{TBD}
+
+\bibliographystyle{yahapj}
+
+\begin{document}
+ 
+\title{Near infrared spectrum of a Class 0 protostar photosphere}
+
+\author{T.B. Determined,\altaffilmark{1}}
+
+
+\altaffiltext{1}{NASA Ames}
+
+\begin{abstract}
+We measure the stellar photosphere of a Class 0 protostar.
+\end{abstract}
+
+\keywords{stars: fundamental parameters --- stars: individual (S68N) ---  stars: low-mass -- stars: statistics}
+
+\maketitle
+
+\section{Introduction}\label{sec:intro}
+The method is from \citep{czekala16}.  It is similar to \citep{2017ApJ...836..200G}.
+
+\subsection{Protostars}
+\subsection{Previous studies of protostar photospheres}
+\subsection{Previous studies of S68N}
+
+
+\section{Observations}
+The observations of S68N were carried out with NIRSPEC on the Keck telescope over 5 epochs from 2003-2014.  The \texttt{NIRSPEC-7} filter provided 1.84$-$2.63 $\mu$m wavelength range, with native spectral resolution of $R=1250$ from a 0\farcs76 (4 pixels) $\times$ 42\farcs0 slit.  
+The individual epochs were coadded to form a single composite spectrum of signal to noise ratio $S/N\sim30$.  
+
+\section{Method}
+
+Our approach involves Bayesian forward modeling of the observed spectrum under a range of different assumptions about the prostellar system.  We discuss the limitations of our assumptions in the discussion section.
+
+\subsection{Composite spectrum forward model}
+
+We assume that stellar photosphere and warm circumstellar disk emission dominate the radiation in the near-IR band.  We constructed a forward model for the observed Keck spectrum using the spectral inference framework \texttt{Starfish} from \citet{czekala16} with support for mixture model modifications from \citet{2017ApJ...836..200G}.  The mixture model for S68N's Keck spectrum is:
+
+\begin{eqnarray} \label{eqn:mix_M}
+	S_{\mathrm{mix}} = \Omega_{\mathrm{\star}} B(\teffa)  + \Omega_{\mathrm{d}} B(\teffb)
+\end{eqnarray}
+where $B(T)$ is the spectral radiance as a function of temperature.  The ratio of solid angles relates the relative size of the emission regions:
+\begin{eqnarray} \label{eqn:fill_factor}
+	\frac{\Omega_d}{\Omega_\star} = \frac{r_d^2 d^2}{r_\star^2 d^2} = \frac{r_d^2}{r_\star^2}
+\end{eqnarray}
+
+approximating the circumstellar disk emission as a face-on circle.  More accurate estimates for the disk emission and geometries could be obtained from rigorous radiative transfer methods \citep[\emph{e.g.}]{2017arXiv170305765R}.  We model the protostellar spectral radiance $B(T_\star)$ with \PHOENIX\ synthetic model spectra possessing an unknown-but-low surface gravity $\logg \in [2.0,4.0]$ in cm$/$s$^2$ and an effective temperature $\teffa \in [2700,3600]$ K.  The circumstellar disk radiance is assumed to be black body, with a temperature range $\teffb \in [1000,1700]$ K capped by the temperature at which typical dust sublimates.
+
+The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and assumed irretrievable---way.  So instead of characterizing the spectral slope by a reddening law and extinction, $A_V$, we instead assume that the overall spectral shape is approximated by a third order polynomial \footnote{The polynomial is parameterized as a linear combination of Chebyshev polynomials truncated to the first 3 non-constant terms.}.
+
+We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  However, the dearth of any conspicuous emission lines suggests that perhaps the S68N is going through a quiescent phase in a variable accretion history.  In any case, the limited spectral information available does not permit a more detailed treatment of accretion or disk gas emission as is possible with higher spectral resolution \citep[\emph{e.g.}]{2016ApJ...826..179L}.  
+
+
+
+\subsection{Experiments}
+ We tried several experiments:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TABLE - Experiment log
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{deluxetable*}{ccp{9cm}p{5cm}}
+
+\tabcolsep=0.11cm
+%\rotate
+\tablecaption{Exeriment log \label{tbl_history}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Exp.} &
+\colhead{Run.} &
+\colhead{Desc.} &
+\colhead{Outcome}
+\\
+\colhead{\#} &
+\colhead{\#} &
+\colhead{-} &
+\colhead{-}
+}
+\startdata
+ 1 & 1 & Original, flawed \texttt{star\_veil.py} code modeled disk radiance as a constant value with no physical interpretation & Exposed need for more physical inputs \\
+2 & 1 & Run with \texttt{star\_BB.py} code with erroneous $\Omega$ prescription, weak priors, poor first guess & Exposed need for better priors and starting guess \\
+2 & 2 & Run with \texttt{star\_BB.py} code with erroneous $\Omega$ prescription, strong priors ($T_{d}$ fixed to $\sim1100$ K), good first guess & Exposed incorrect $\Omega$ treatment \\
+3 & 1 & Run with \texttt{star\_BB.py} code with correct absolute flux level, strong priors ($T_{d}$ fixed to $\sim1100$ K). & Reasonable results, weak constraints on $\logg$. \\
+3 & 2 & \emph{In progress:} Run with \texttt{star\_BB.py} code with correct absolute flux level, \emph{weak} priors ($T_{d}$ variable $\in [1000,1700]$ K). & -- \\
+4 & 1 & Reduced spectral range to enhance $\logg$ sensitivity & Good convergence, wide range \\
+\enddata
+\end{deluxetable*}
+
+\section{Results}
+
+\subsection{Experiment 3, Run 1}
+
+
+\begin{figure}
+ \centering
+ \includegraphics[width=0.45\textwidth]{../plots/logg_omega_phys.pdf}
+ \caption{Posterior probability distribution function from Experiment 3, Run1, marginalized over all stellar and nuisance parameters except $\logg$ and $\Omega_d/\Omega_\star$.  The surface gravity correlates with the solid angle ratio since both of these factors affect the CO line depths.  Lines of differing stellar mass and disk radii are shown for a range of stellar radii.}
+ \label{fig:posterior_loggOmega}
+\end{figure}
+
+
+~\clearpage
+
+\begin{figure*}[b]
+ \centering
+ \includegraphics[width=0.85\textwidth]{../plots/gully_Class0_Teff_logg_results.pdf}
+ \caption{Pre-main sequence and protostar evolution comparison between theory (left panel) and obseration (right panel).  The 0.02$-$1.2 $M_{\odot}$ evolutionary model tracks are from \citet{baraffe15}, spanning 1 Myr to 100 Myr isochrones; protostars are expected to sit below the 1 Myr isochrone in the region of parameter space demarcated with a yellow dashed ellipse.  The observations show coarse agreement with the models-- measurements of the Pleiades from \citet[green KDE]{cottaar14} cluster around the 100 Myr isochrone, although extend into higher-than-predicted $\log{g}$ for hotter stars.  The younger IC348 sources \citep[purple KDE]{cottaar14} cluster with a large spread above and below the $\sim10$ Myr isochrone.  The source S 68N has a broad posterior PDF (Experiment 4-teal KDE, Experiment 3- red/brown KDE) placing its maximum a-posteriori estimate inside the range of protostars, regardless of experimental assumptions.  The black dots are Class I protostars from \citet{2005AJ....130.1145D}, showing a large range in measured properties with relatively large uncertainties in $\log{g}$.}  
+ \label{fig:theory_v_obs}
+\end{figure*}
+
+
+
+\section{Discussion}
+
+
+\clearpage
+\pagebreak
+
+
+\appendix
+
+\section{Adaptations of Starfish to handle absolute flux and solid angle}
+
+\acknowledgements
+We thank the Keck telescope staff. 
+
+{\it Facilities:} \facility{Keck (NIRSPEC)}
+
+{\it Software: } 
+ \project{pandas} \citep{mckinney10},
+ \project{emcee} \citep{foreman13},
+ \project{matplotlib} \citep{hunter07},
+ \project{numpy} \citep{vanderwalt11},
+ \project{scipy} \citep{jones01},
+ \project{ipython} \citep{perez07},
+ \project{starfish} \citep{czekala15},
+ \project{seaborn} \citep{waskom14}
+
+\clearpage
+
+\bibliographystyle{apj}
+\bibliography{ms}
+
+\end{document}
