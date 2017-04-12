@@ -6,7 +6,7 @@ import multiprocessing
 import time
 import numpy as np
 import Starfish
-from Starfish.model_BB import ThetaParam, PhiParam
+from model_BB import ThetaParam, PhiParam
 
 import argparse
 parser = argparse.ArgumentParser(prog="star_BB.py", description="Run Starfish fitting model in single order mode with many walkers, with extra black body component.")

@@ -1,7 +1,7 @@
 import numpy as np
 import Starfish
-from . import constants as C
-from .grid_tools import Interpolator
+from Starfish import constants as C
+from Starfish.grid_tools import Interpolator
 import json
 import h5py
 import logging
