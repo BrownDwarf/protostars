@@ -34,3 +34,20 @@ However, we abandoned this parameterization in favor of a Black Body with a soli
 Here we parameterize veiling as described in [Starfish Issue #75](https://github.com/iancze/Starfish/issues/75), namely a disk temperature `T_BB` and a disk solid angle, `Omega_BB`.  MGS forked `star_veil.py` into `star_BB.py` to adjust for these new parameters.  
 **run01** failed due to a bug in which only the stellar model was being multiplied by the Chebyshev polynomials, leading to highly degenerate posteriors and numerical precision problems that crashed the code 1500 steps into the 5000 step MCMC sampling.  
 **run02** corrected the Chebyshev bug and applied some additional strong posteriors to aid in convergence.  These priors are probably overly strong, and should be relaxed in future runs.  The samples converged.
+
+### Third (and fifth) attempts at veiling: *exp3*
+Veiling is parameterized as disk temperature `T_BB` and a disk solid angle, `Omega_BB`but with corrected absolute flux ratio using the "flux_scalars" discussion in [Issue 5](https://github.com/BrownDwarf/protostars/issues/5).   
+**run01** The whole available spectral region, with a tight T_BB prior of 1100 K.  
+**run02** The whole available spectral region, with a relaxed T_BB prior 1000-1700 K.  
+
+### Fourth attempt at veiling: *exp4*
+Same as *exp3*, but with a reduced spectral chunk (or "window") surrounding the CO bandhead.  
+**run01** A tight T_BB prior of 1100 K, priors the same as exp3 run01  
+
+### Sixth attempt at veiling: *exp5*
+Same as *exp3*, but with a reduced spectral chunk (or "window") surrounding the CO bandhead plus Na I line at 2.2 um.   
+**run01** A tight T_BB prior of 1100 K, priors the same as exp3 run01.  
+
+### Seventh attempt at veiling: *exp6*
+Same as *exp3* run01, but with extinction and scattering implemented
+**run01** A tight T_BB prior of 1100 K, priors the same as exp3 run01.  
