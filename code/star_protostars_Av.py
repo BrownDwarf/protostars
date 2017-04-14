@@ -1,15 +1,8 @@
 #!/usr/bin/env python
-
-# All of the argument parsing is done in the `parallel.py` module.
-
-import multiprocessing
 import time
 import numpy as np
-import Starfish
-from model_BB import ThetaParam, PhiParam
-
 import argparse
-parser = argparse.ArgumentParser(prog="star_BB.py", description="Run Starfish fitting model in single order mode with many walkers, with extra black body component.")
+parser = argparse.ArgumentParser(prog="star_protostars_Av.py", description="Run Starfish fitting model in single order mode with many walkers, with extra black body component.")
 parser.add_argument("--samples", type=int, default=5, help="How many samples to run?")
 parser.add_argument("--incremental_save", type=int, default=100, help="How often to save incremental progress of MCMC samples.")
 parser.add_argument("--resume", action="store_true", help="Continue from the last sample. If this is left off, the chain will start from your initial guess specified in config.yaml.")
@@ -17,11 +10,13 @@ args = parser.parse_args()
 
 import os
 
+import multiprocessing
 import Starfish.grid_tools
 from Starfish.spectrum import DataSpectrum, Mask, ChebyshevSpectrum
 from Starfish.emulator import Emulator
 import Starfish.constants as C
 from Starfish.covariance import get_dense_C, make_k_func, make_k_func_region
+from numpy.polynomial import Chebyshev as Ch
 
 from scipy.special import j1
 from scipy.interpolate import InterpolatedUnivariateSpline
@@ -41,7 +36,9 @@ import yaml
 import shutil
 import json
 
-
+from star_base import Order as OrderBase
+from star_base import SampleThetaPhi as SampleThetaPhiBase 
+from model_BB_Av import ThetaParam, PhiParam
 
 Starfish.routdir = ""
 
@@ -57,113 +54,22 @@ Instruments = [eval("Starfish.grid_tools." + inst)() for inst in Starfish.data["
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s -  %(message)s", filename="{}log.log".format(
     Starfish.routdir), level=logging.DEBUG, filemode="w", datefmt='%m/%d/%Y %I:%M:%S %p')
 
-class Order:
-    def __init__(self, debug=False):
-        '''
-        This object contains all of the variables necessary for the partial
-        lnprob calculation for one echelle order. It is designed to first be
-        instantiated within the main processes and then forked to other
-        subprocesses. Once operating in the subprocess, the variables specific
-        to the order are loaded with an `INIT` message call, which tells which key
-        to initialize on in the `self.initialize()`.
-        '''
-        self.lnprob = -np.inf
-        self.lnprob_last = -np.inf
-
-        self.debug = debug
+class Order(OrderBase):
 
     def initialize(self, key):
-        '''
-        Initialize to the correct chunk of data (echelle order).
-
-        :param key: (spectrum_id, order_key)
-        :param type: (int, int)
-
-        This method should only be called after all subprocess have been forked.
-        '''
-
-        self.id = key
-        spectrum_id, self.order_key = self.id
-        # Make sure these are ints
-        self.spectrum_id = int(spectrum_id)
-
-        self.instrument = Instruments[self.spectrum_id]
-        self.dataSpectrum = DataSpectra[self.spectrum_id]
-        self.wl = self.dataSpectrum.wls[self.order_key]
-        self.fl = self.dataSpectrum.fls[self.order_key]
-        self.sigma = self.dataSpectrum.sigmas[self.order_key]
-        self.ndata = len(self.wl)
-        self.mask = self.dataSpectrum.masks[self.order_key]
-        self.order = int(self.dataSpectrum.orders[self.order_key])
-
-        self.logger = logging.getLogger("{} {}".format(self.__class__.__name__, self.order))
-        if self.debug:
-            self.logger.setLevel(logging.DEBUG)
-        else:
-            self.logger.setLevel(logging.INFO)
-
-        self.logger.info("Initializing model on Spectrum {}, order {}.".format(self.spectrum_id, self.order_key))
-
-        self.npoly = Starfish.config["cheb_degree"]
-        self.chebyshevSpectrum = ChebyshevSpectrum(self.dataSpectrum, self.order_key, npoly=self.npoly)
-
-        # If the file exists, optionally initiliaze to the chebyshev values
-        fname = Starfish.specfmt.format(self.spectrum_id, self.order) + "phi.json"
-        if os.path.exists(fname):
-            self.logger.debug("Loading stored Chebyshev parameters.")
-            phi = PhiParam.load(fname)
-            self.chebyshevSpectrum.update(phi.cheb)
-
-        #self.resid_deque = deque(maxlen=500) #Deque that stores the last residual spectra, for averaging
-        self.counter = 0
-
-        self.emulator = Emulator.open()
-        self.emulator.determine_chunk_log(self.wl)
-
-        self.pca = self.emulator.pca
-
-        self.wl_FFT = self.pca.wl
-
-        # The raw eigenspectra and mean flux components
-        self.EIGENSPECTRA = np.vstack((self.pca.flux_mean[np.newaxis,:], self.pca.flux_std[np.newaxis,:], self.pca.eigenspectra))
-
-        self.ss = np.fft.rfftfreq(self.pca.npix, d=self.emulator.dv)
-        self.ss[0] = 0.01 # junk so we don't get a divide by zero error
-
-        # Holders to store the convolved and resampled eigenspectra
-        self.eigenspectra = np.empty((self.pca.m, self.ndata))
-        self.flux_mean = np.empty((self.ndata,))
-        self.flux_std = np.empty((self.ndata,))
-        self.flux_scalar = None
-
-        self.sigma_mat = self.sigma**2 * np.eye(self.ndata)
-        self.mus, self.C_GP, self.data_mat = None, None, None
-        self.Omega = None
-        self.Omega2 = None
-        self.BB_lam = np.empty((self.ndata,))
-
-        self.lnprior = 0.0 # Modified and set by NuisanceSampler.lnprob
-
-        # self.nregions = 0
-        # self.exceptions = []
-
-        # Update the outdir based upon id
-        self.noutdir = Starfish.routdir + "{}/{}/".format(self.spectrum_id, self.order)
+        OrderBase.initialize(self, key)
+        self.extinction = None
+        #self.sca_lambda = None
 
 
-    def lnprob_Theta(self, p):
-        '''
-        Update the model to the Theta parameters and then evaluate the lnprob.
+    def update_Theta(self, p):
+        OrderBase.update_Theta(self, p)
+        # Add in the veiling and scattering
+        A_lambda_Av =  0.432 * (self.wl/10000.0)**-2.0 #std law is -1.74, Nishiyama is -2.0
+        total_extinction = 10**(-0.4 * p.Av * A_lambda_Av)
+        self.extinction = total_extinction / np.mean(total_extinction) 
+        #self.sca_lambda = p.sca*(self.wl/10000.0/2.2)**-4.0 #Rayleigh Scattering
 
-        Intended to be called from the master process via the command "LNPROB".
-        '''
-        try:
-            self.update_Theta(p)
-            lnp, raw_models = self.evaluate() # Also sets self.lnprob to new value
-            return lnp, raw_models
-        except C.ModelError:
-            self.logger.debug("ModelError in stellar parameters, sending back -np.inf {}".format(p))
-            return -np.inf, []
 
     def evaluate(self):
         '''
@@ -173,7 +79,7 @@ class Order:
 
         self.lnprob_last = self.lnprob
 
-        X = (self.chebyshevSpectrum.k * self.flux_std * np.eye(self.ndata)).dot(self.eigenspectra.T)
+        X = (self.extinction * self.chebyshevSpectrum.k * self.flux_std * np.eye(self.ndata)).dot(self.eigenspectra.T)
 
         CC = self.Omega**2 * self.flux_scalar**2 * X.dot(self.C_GP.dot(X.T)) + self.data_mat
 
@@ -186,12 +92,12 @@ class Order:
 
         try:
             # Stellar photosphere 
-            model1 = self.Omega * self.flux_scalar * (self.chebyshevSpectrum.k * self.flux_mean + X.dot(self.mus))
+            model1 = self.Omega * self.flux_scalar * (self.extinction * self.chebyshevSpectrum.k * self.flux_mean + X.dot(self.mus))
             # Black body
-            model2 = self.Omega2 * self.BB_lam * self.chebyshevSpectrum.k
+            model2 = self.Omega2 * self.BB_lam * self.extinction * self.chebyshevSpectrum.k
 
             # Return a "metadata blob" of both spectrum models
-            raw_models = np.array([model1, model2, self.chebyshevSpectrum.k, self.flux_mean])
+            raw_models = np.array([model1, model2, self.extinction, self.chebyshevSpectrum.k])
 
             net_model = model1 + model2
             R = self.fl - net_model
@@ -208,196 +114,8 @@ class Order:
             raise
 
 
-    def CC_debugger(self, CC):
-        '''
-        Special debugging information for the covariance matrix decomposition.
-        '''
-        print('{:-^60}'.format('CC_debugger'))
-        print("See https://github.com/iancze/Starfish/issues/26")
-        print("Covariance matrix at a glance:")
-        if (CC.diagonal().min() < 0.0):
-            print("- Negative entries on the diagonal:")
-            print("\t- Check sigAmp: should be positive")
-            print("\t- Check uncertainty estimates: should all be positive")
-        elif np.any(np.isnan(CC.diagonal())):
-            print("- Covariance matrix has a NaN value on the diagonal")
-        else:
-            if not np.allclose(CC, CC.T):
-                print("- The covariance matrix is highly asymmetric")
-
-            #Still might have an asymmetric matrix below `allclose` threshold
-            evals_CC, evecs_CC = np.linalg.eigh(CC)
-            n_neg = (evals_CC < 0).sum()
-            n_tot = len(evals_CC)
-            print("- There are {} negative eigenvalues out of {}.".format(n_neg, n_tot))
-            mark = lambda val: '>' if val < 0 else '.'
-
-            print("Covariance matrix eigenvalues:")
-            print(*["{: >6} {:{fill}>20.3e}".format(i, evals_CC[i], 
-                                                    fill=mark(evals_CC[i])) for i in range(10)], sep='\n')
-            print('{: >15}'.format('...'))
-            print(*["{: >6} {:{fill}>20.3e}".format(n_tot-10+i, evals_CC[-10+i], 
-                                                   fill=mark(evals_CC[-10+i])) for i in range(10)], sep='\n')
-        print('{:-^60}'.format('-'))
-
-
-    def update_Theta(self, p):
-        '''
-        Update the model to the current Theta parameters.
-
-        :param p: parameters to update model to
-        :type p: model.ThetaParam
-        '''
-
-        # durty HACK to get fixed logg
-        # Simply fixes the middle value to be 4.29
-        # Check to see if it exists, as well
-        fix_logg = Starfish.config.get("fix_logg", None)
-        if fix_logg is not None:
-            p.grid[1] = fix_logg
-        #print("grid pars are", p.grid)
-
-        self.logger.debug("Updating Theta parameters to {}".format(p))
-
-        # Store the current accepted values before overwriting with new proposed values.
-        self.flux_mean_last = self.flux_mean.copy()
-        self.flux_std_last = self.flux_std.copy()
-        self.eigenspectra_last = self.eigenspectra.copy()
-        self.mus_last = self.mus
-        self.C_GP_last = self.C_GP
-
-        # Local, shifted copy of wavelengths
-        wl_FFT = self.wl_FFT * np.sqrt((C.c_kms + p.vz) / (C.c_kms - p.vz))
-
-        # If vsini is less than 0.2 km/s, we might run into issues with
-        # the grid spacing. Therefore skip the convolution step if we have
-        # values smaller than this.
-        # FFT and convolve operations
-        if p.vsini < 0.0:
-            raise C.ModelError("vsini must be positive")
-        elif p.vsini < 0.2:
-            # Skip the vsini taper due to instrumental effects
-            eigenspectra_full = self.EIGENSPECTRA.copy()
-        else:
-            FF = np.fft.rfft(self.EIGENSPECTRA, axis=1)
-
-            # Determine the stellar broadening kernel
-            ub = 2. * np.pi * p.vsini * self.ss
-            sb = j1(ub) / ub - 3 * np.cos(ub) / (2 * ub ** 2) + 3. * np.sin(ub) / (2 * ub ** 3)
-            # set zeroth frequency to 1 separately (DC term)
-            sb[0] = 1.
-
-            # institute vsini taper
-            FF_tap = FF * sb
-
-            # do ifft
-            eigenspectra_full = np.fft.irfft(FF_tap, self.pca.npix, axis=1)
-
-        # Spectrum resample operations
-        if min(self.wl) < min(wl_FFT) or max(self.wl) > max(wl_FFT):
-            raise RuntimeError("Data wl grid ({:.2f},{:.2f}) must fit within the range of wl_FFT ({:.2f},{:.2f})".format(min(self.wl), max(self.wl), min(wl_FFT), max(wl_FFT)))
-
-        # Take the output from the FFT operation (eigenspectra_full), and stuff them
-        # into respective data products
-        for lres, hres in zip(chain([self.flux_mean, self.flux_std], self.eigenspectra), eigenspectra_full):
-            interp = InterpolatedUnivariateSpline(wl_FFT, hres, k=5)
-            lres[:] = interp(self.wl)
-            del interp
-
-        # Helps keep memory usage low, seems like the numpy routine is slow
-        # to clear allocated memory for each iteration.
-        gc.collect()
-
-        this_BB_lam = blackbody_lambda(self.wl, p.T_BB)
-        self.BB_lam = this_BB_lam.to(u.erg/(u.s*(u.cm**2)*u.Angstrom*u.sr)).value
-
-        # Now update the parameters from the emulator
-        # If pars are outside the grid, Emulator will raise C.ModelError
-        self.emulator.params = p.grid
-        self.mus, self.C_GP = self.emulator.matrix
-
-        # New in version 0.3: flux scalar
-        self.flux_scalar = self.emulator.absolute_flux
-        self.Omega = 10**p.logOmega
-        self.Omega2 = 10**p.logOmega2
-
-
-class SampleThetaPhi(Order):
-
-    def initialize(self, key):
-        # Run through the standard initialization
-        super().initialize(key)
-
-        # for now, start with white noise
-        self.data_mat = self.sigma_mat.copy()
-        self.data_mat_last = self.data_mat.copy()
-
-        #Set up p0 and the independent sampler
-        fname = Starfish.specfmt.format(self.spectrum_id, self.order) + "phi.json"
-        phi = PhiParam.load(fname)
-
-        # Set the regions to None, since we don't want to include them even if they
-        # are there
-        phi.regions = None
-
-        #Loading file that was previously output
-        # Convert PhiParam object to an array
-        self.p0 = phi.toarray()
-
-        jump = Starfish.config["Phi_jump"]
-        cheb_len = (self.npoly - 1) if self.chebyshevSpectrum.fix_c0 else self.npoly
-        cov_arr = np.concatenate((Starfish.config["cheb_jump"]**2 * np.ones((cheb_len,)), np.array([jump["sigAmp"], jump["logAmp"], jump["l"]])**2 ))
-        cov = np.diag(cov_arr)
-
-        def lnfunc(p):
-            # Convert p array into a PhiParam object
-            ind = self.npoly
-            if self.chebyshevSpectrum.fix_c0:
-                ind -= 1
-
-            cheb = p[0:ind]
-            sigAmp = p[ind]
-            ind+=1
-            logAmp = p[ind]
-            ind+=1
-            l = p[ind]
-
-            par = PhiParam(self.spectrum_id, self.order, self.chebyshevSpectrum.fix_c0, cheb, sigAmp, logAmp, l)
-
-            self.update_Phi(par)
-
-            # sigAmp must be positive (this is effectively a prior)
-            # See https://github.com/iancze/Starfish/issues/26
-            if not (0.0 < sigAmp): 
-                self.lnprob_last = self.lnprob
-                lnp = -np.inf
-                self.logger.debug("sigAmp was negative, returning -np.inf")
-                self.lnprob = lnp # Same behavior as self.evaluate()
-            else:
-                lnp, raw_models = self.evaluate()
-                self.logger.debug("Evaluated Phi parameters: {} {}".format(par, lnp))
-
-            return lnp, raw_models
-
-
-    def update_Phi(self, p):
-        self.logger.debug("Updating nuisance parameters to {}".format(p))
-
-        # Read off the Chebyshev parameters and update
-        self.chebyshevSpectrum.update(p.cheb)
-
-        # Check to make sure the global covariance parameters make sense
-        #if p.sigAmp < 0.1:
-        #   raise C.ModelError("sigAmp shouldn't be lower than 0.1, something is wrong.")
-
-        max_r = 6.0 * p.l # [km/s]
-
-        # Create a partial function which returns the proper element.
-        k_func = make_k_func(p)
-
-        # Store the previous data matrix in case we want to revert later
-        self.data_mat_last = self.data_mat
-        self.data_mat = get_dense_C(self.wl, k_func=k_func, max_r=max_r) + p.sigAmp*self.sigma_mat
+class SampleThetaPhi(Order, SampleThetaPhiBase):
+    pass
 
 
 # Run the program.
@@ -409,10 +127,11 @@ model.initialize((0,0))
 def lnlike(p):
     # Now we can proceed with the model
     try:
-        pars1 = ThetaParam(grid=p[0:3], vz=p[3], vsini=p[4], logOmega=p[5], T_BB=p[6], logOmega2=p[7])
+        pars1 = ThetaParam(grid=p[0:3], vz=p[3], vsini=p[4], logOmega=p[5], T_BB=p[6],
+                            logOmega2=p[7], Av=p[8])
         model.update_Theta(pars1)
         # hard code npoly=3 (for fixc0 = True with npoly=4)
-        pars2 = PhiParam(0, 0, True, p[8:11], p[11], p[12], p[13])
+        pars2 = PhiParam(0, 0, True, p[9:12], p[12], p[13], p[14])
         model.update_Phi(pars2)
         lnp, raw_models = model.evaluate()
         return lnp, raw_models
@@ -422,10 +141,9 @@ def lnlike(p):
 
 
 def lnprior(p):
-    print(p[11])
-    if not ( p[11] > 0):
+    print(p[12])
+    if not ( p[12] > 0):
         return -1.0*np.inf
-
 
 
 # Try to load a user-defined prior
@@ -439,13 +157,26 @@ try:
     lnprior = user_defined_lnprior
     print("Using the user defined prior in {}".format(sourcepath_env))
 except:
-    pass
+    raise
+
+
+x_vec = np.arange(-1, 1, 0.01)
+def cheb_prior(p):
+    ch_tot = Ch([0, p[9], p[10], p[11]])
+    ch_spec = ch_tot(x_vec)
+    if not ( (np.max(ch_spec) < 0.03) and
+             (np.min(ch_spec) > -0.03) ):
+        return -np.inf
+
+    return 0.0
+
 
 
 # Insert the prior here
 def lnprob(p):
     #print(p)
-    lp = lnprior(p)
+    lp0 = lnprior(p)
+    lp = lp0 + cheb_prior(p)
     if not np.isfinite(lp):
         return -1.0*np.inf, []
     lnlike_val, raw_models = lnlike(p)
@@ -458,12 +189,13 @@ start = Starfish.config["Theta"]
 fname = Starfish.specfmt.format(model.spectrum_id, model.order) + "phi.json"
 phi0 = PhiParam.load(fname)
 
-ndim, nwalkers = 14, 40
+ndim, nwalkers = 15, 40
 
-p0 = np.array(start["grid"] + [start["vz"], start["vsini"], start["logOmega"], start["T_BB"], start["logOmega2"]] + 
+p0 = np.array(start["grid"] + [start["vz"], start["vsini"], start["logOmega"], start["T_BB"], 
+              start["logOmega2"], start["Av"]] + 
              phi0.cheb.tolist() + [phi0.sigAmp, phi0.logAmp, phi0.l])
 
-p0_std = [5, 0.02, 0.0005, 0.5, 0.5, -0.01, 5, -0.01, -0.005, -0.005, -0.005, 0.01, 0.001, 0.5]
+p0_std = [5, 0.02, 0.0005, 0.5, 0.5, -0.01, 5, -0.01, 0.1, -0.005, -0.005, -0.005, 0.01, 0.001, 0.5]
 
 if args.resume:
     p0_ball = np.load("emcee_chain.npy")[:,-1,:]
