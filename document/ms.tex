@@ -95,8 +95,12 @@ We assume there is zero emission attributable to mass accretion onto the star or
 2 & 1 & Run with \texttt{star\_BB.py} code with erroneous $\Omega$ prescription, weak priors, poor first guess & Exposed need for better priors and starting guess \\
 2 & 2 & Run with \texttt{star\_BB.py} code with erroneous $\Omega$ prescription, strong priors ($T_{d}$ fixed to $\sim1100$ K), good first guess & Exposed incorrect $\Omega$ treatment \\
 3 & 1 & Run with \texttt{star\_BB.py} code with correct absolute flux level, strong priors ($T_{d}$ fixed to $\sim1100$ K). & Reasonable results, weak constraints on $\logg$. \\
-3 & 2 & \emph{In progress:} Run with \texttt{star\_BB.py} code with correct absolute flux level, \emph{weak} priors ($T_{d}$ variable $\in [1000,1700]$ K). & -- \\
-4 & 1 & Reduced spectral range to enhance $\logg$ sensitivity & Good convergence, wide range \\
+3 & 2 & Run with \texttt{star\_BB.py} code with correct absolute flux level, \emph{weak} priors ($T_{d}$ variable $\in [1000,1700]$ K). & -- \\
+4 & 1 & Reduced spectral range to enhance $\logg$ sensitivity & Good convergence, wide posteriors \\
+5 & 1 &  Windowing on CO and Na~I, $T_{d}$ fixed to $\sim1100$ K & Slightly higher $T_{\mathrm{eff}}$ and $\log{g}$ compared to just CO window.\\
+6 & 1 &  Introduce $A_V$, with fixed ($\chi=-2.0$) slope, $\log{g}>2.0$, Chebyshev $6\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors than before\\
+7 & 1 &  $A_V$, with variable ($\chi \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors due to tighter Chebyshev, $\chi$ limit exceeded\\
+8 & 1 &  $A_K$, with variable ($\chi \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Re-running\\
 \enddata
 \end{deluxetable*}
 
