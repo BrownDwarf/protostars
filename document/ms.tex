@@ -62,10 +62,13 @@ where $B(T)$ is the spectral radiance as a function of temperature.  The ratio o
 
 approximating the circumstellar disk emission as a face-on circle.  More accurate estimates for the disk emission and geometries could be obtained from rigorous radiative transfer methods \citep[\emph{e.g.}]{2017arXiv170305765R}.  We model the protostellar spectral radiance $B(T_\star)$ with \PHOENIX\ synthetic model spectra possessing an unknown-but-low surface gravity $\logg \in [2.0,4.0]$ in cm$/$s$^2$ and an effective temperature $\teffa \in [2700,3600]$ K.  The circumstellar disk radiance is assumed to be black body, with a temperature range $\teffb \in [1000,1700]$ K capped by the temperature at which typical dust sublimates.
 
-The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and assumed irretrievable---way.  So instead of characterizing the spectral slope by a reddening law and extinction, $A_V$, we instead assume that the overall spectral shape is approximated by a third order polynomial \footnote{The polynomial is parameterized as a linear combination of Chebyshev polynomials truncated to the first 3 non-constant terms.}.
+The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and potentially irretrievable---way.  We explored several options for characterizing the extinction towards S68N.  First, instead of characterizing the spectral slope by a reddening law and extinction, $A_V$, we instead assumed that the overall spectral shape is approximated by a third order polynomial \footnote{The polynomial is parameterized as a linear combination of Chebyshev polynomials truncated to the first 3 non-constant terms.}.  The polynomial coefficients lacked interpretability, and may not have adequately approximated extinction power laws, so we also experimented with an $A_K$ and a power law slope:
 
-We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  However, the dearth of any conspicuous emission lines suggests that perhaps the S68N is going through a quiescent phase in a variable accretion history.  In any case, the limited spectral information available does not permit a more detailed treatment of accretion or disk gas emission as is possible with higher spectral resolution \citep[\emph{e.g.}]{2016ApJ...826..179L}.  
+$$ A_\lambda / A_K = \frac{\lambda}{2.2 \; \mu\mathrm{m}}^\alpha$$
 
+with $\alpha \in [-2, -1.7]$ representing the power law exponent that may depend on dust properties and degree of extinction.
+
+We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  We see H$_2$ emission lines in the $K-$band spectrum of S68N, so some degree of accretion is likely ongoing, potentially contributing non-negligible veiling in the photospheric absorption lines.  In any case, the limited spectral information available does not permit a more detailed treatment of accretion or disk gas emission as is possible with higher spectral resolution \citep[\emph{e.g.}]{2016ApJ...826..179L}.  
 
 
 \subsection{Experiments}
@@ -98,9 +101,9 @@ We assume there is zero emission attributable to mass accretion onto the star or
 3 & 2 & Run with \texttt{star\_BB.py} code with correct absolute flux level, \emph{weak} priors ($T_{d}$ variable $\in [1000,1700]$ K). & -- \\
 4 & 1 & Reduced spectral range to enhance $\logg$ sensitivity & Good convergence, wide posteriors \\
 5 & 1 &  Windowing on CO and Na~I, $T_{d}$ fixed to $\sim1100$ K & Slightly higher $T_{\mathrm{eff}}$ and $\log{g}$ compared to just CO window.\\
-6 & 1 &  Introduce $A_V$, with fixed ($\chi=-2.0$) slope, $\log{g}>2.0$, Chebyshev $6\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors than before\\
-7 & 1 &  $A_V$, with variable ($\chi \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors due to tighter Chebyshev, $\chi$ limit exceeded\\
-8 & 1 &  $A_K$, with variable ($\chi \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Re-running\\
+6 & 1 &  Introduce $A_V$, with fixed ($\alpha=-2.0$) slope, $\log{g}>2.0$, Chebyshev $6\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors than before\\
+7 & 1 &  $A_V$, with variable ($\alpha \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Tighter $T_{eff}$ and $\log{g}$ posteriors due to tighter Chebyshev, $\alpha$ limit exceeded\\
+8 & 1 &  $A_K$, with variable ($\alpha \in [-2.0, -1.7]$) slope, $\log{g}>2.0$, Chebyshev $2\%$ peak-to-valley & Re-running\\
 \enddata
 \end{deluxetable*}
 
