@@ -68,8 +68,7 @@ class Order(OrderBase):
         A_lambda_A_K =  (self.wl/22000.0)**p.exponentA_K #std law is -1.74, Nishiyama is -2.0
         total_extinction = 10**(-0.4 * p.A_K * A_lambda_A_K)
         self.extinction = total_extinction / np.mean(total_extinction) 
-        #self.sca_lambda = p.sca*(self.wl/10000.0/2.2)**-4.0 #Rayleigh Scattering
-
+        
 
     def evaluate(self):
         '''
@@ -195,7 +194,7 @@ p0 = np.array(start["grid"] + [start["vz"], start["vsini"], start["logOmega"], s
               start["logOmega2"], start["A_K"] , start["exponentA_K"]] +
              phi0.cheb.tolist() + [phi0.sigAmp, phi0.logAmp, phi0.l])
 
-p0_std = [5, 0.02, 0.0005, 0.5, 0.5, -0.01, 5, -0.01, 0.1, 0.0001, -0.005, -0.005, -0.005, 0.01, 0.001, 0.5]
+p0_std = [5, 0.02, 0.0005, 0.5, 0.5, 0.01, 5, 0.01, 0.01, 0.000001, 0.005, 0.005, 0.005, 0.01, 0.001, 0.5]
 
 if args.resume:
     p0_ball = np.load("emcee_chain.npy")[:,-1,:]
