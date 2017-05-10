@@ -102,7 +102,7 @@ class Order:
         self.EIGENSPECTRA = np.vstack((self.pca.flux_mean[np.newaxis,:], self.pca.flux_std[np.newaxis,:], self.pca.eigenspectra))
 
         self.ss = np.fft.rfftfreq(self.pca.npix, d=self.emulator.dv)
-        self.ss[0] = 0.01 # junk so we don't get a divide by zero error
+        #self.ss[0] = 0.01 # junk so we don't get a divide by zero error
 
         # Holders to store the convolved and resampled eigenspectra
         self.eigenspectra = np.empty((self.pca.m, self.ndata))
