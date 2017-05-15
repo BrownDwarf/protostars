@@ -33,7 +33,7 @@ We measure the stellar photosphere of a Class 0 protostar.
 \maketitle
 
 \section{Introduction}\label{sec:intro}
-The method is from \citep{czekala16}.  It is similar to \citep{2017ApJ...836..200G}.
+The method is from \citep{czekala15}.  It is similar to \citep{2017ApJ...836..200G}.
 
 \subsection{Protostars}
 \subsection{Previous studies of protostar photospheres}
@@ -46,11 +46,11 @@ The individual epochs were coadded to form a single composite spectrum of signal
 
 \section{Method}
 
-Our approach involves Bayesian forward modeling of the observed spectrum under a range of different assumptions about the prostellar system.  We discuss the limitations of our assumptions in the discussion section.
+Our approach involves Bayesian forward modeling of the observed spectrum under a range of different assumptions about the protostellar system.  We discuss the limitations of our assumptions in the discussion section.
 
 \subsection{Composite spectrum forward model}
 
-We assume that stellar photosphere and warm circumstellar disk emission dominate the radiation in the near-IR band.  We constructed a forward model for the observed Keck spectrum using the spectral inference framework \texttt{Starfish} from \citet{czekala16} with support for mixture model modifications from \citet{2017ApJ...836..200G}.  The mixture model for S68N's Keck spectrum is:
+We assume that stellar photosphere and warm circumstellar disk emission dominate the radiation in the near-IR $K-$band.  We constructed a forward model for the observed Keck spectrum using the spectral inference framework \texttt{Starfish} from \citet{czekala15} with support for mixture model modifications from \citet{2017ApJ...836..200G}.  The mixture model for S68N's Keck spectrum is:
 
 \begin{eqnarray} \label{eqn:mix_M}
 	S_{\mathrm{mix}} = \Omega_{\mathrm{\star}} B(\teffa)  + \Omega_{\mathrm{d}} B(\teffb)
@@ -64,9 +64,11 @@ approximating the circumstellar disk emission as a face-on circle.  More accurat
 
 The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and potentially irretrievable---way.  We explored several options for characterizing the extinction towards S68N.  First, instead of characterizing the spectral slope by a reddening law and extinction, $A_V$, we instead assumed that the overall spectral shape is approximated by a third order polynomial \footnote{The polynomial is parameterized as a linear combination of Chebyshev polynomials truncated to the first 3 non-constant terms.}.  The polynomial coefficients lacked interpretability, and may not have adequately approximated extinction power laws, so we also experimented with an $A_K$ and a power law slope:
 
-$$ A_\lambda / A_K = \frac{\lambda}{2.2 \; \mu\mathrm{m}}^\alpha$$
+$$ A_\lambda / A_K = \frac{\lambda}{2.2 \; \mu\mathrm{m}}^{-\alpha}$$
 
-with $\alpha \in [-2, -1.7]$ representing the power law exponent that may depend on dust properties and degree of extinction.
+with $\alpha \in [-2, -1.7]$ representing the power law exponent that may depend on dust properties and degree of extinction.  The extinction is then defined as:
+
+$$ 10^{-0.4 A_\lambda}$$
 
 We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  We see H$_2$ emission lines in the $K-$band spectrum of S68N, so some degree of accretion is likely ongoing, potentially contributing non-negligible veiling in the photospheric absorption lines.  In any case, the limited spectral information available does not permit a more detailed treatment of accretion or disk gas emission as is possible with higher spectral resolution \citep[\emph{e.g.}]{2016ApJ...826..179L}.  
 
