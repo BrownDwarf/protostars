@@ -1,0 +1,32 @@
+Things to say in the paper:
+
+- **Methodology**:  
+  - Composite spectrum forward model and assumptions:  
+    - Phoenix model for photosphere
+    - Temperature range.
+    - Disk veiling is black body
+    - Geometrical assumptions and solid angle
+    - Reddening and extinction with uncertain slope
+    - No line emission
+    - No accretion
+    - No binary
+    - No non-thermal emission
+    - Single temperature black body for dust
+    - Nuisance parameters-- correlated residual spectrum
+    - No pixel-to-pixel variance available, assume S/N = 30
+    - Motivation for priors / empirical Bayes / Physics
+  - Basic MCMC stuff
+- **Results**: from spectral inference
+  - Low gravity
+  - Solid angle ratio
+  - High extinction
+  - Reasonable Effective Temperature
+  - No preferred BB temperature
+  - No preferred reddening power law
+  - Comparison to evolutionary models
+  - Comparison to data from IN-SYNC and Doppman et al.
+- **Discussion**:
+  - Limitations of the assumptions
+  - What independent evidence is there that S68N is part of the cloud?
+  - Robustness of the results in the face of limitations
+  - Forward model of observations with JWST?
