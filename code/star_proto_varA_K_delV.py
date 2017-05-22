@@ -95,20 +95,15 @@ class Order(OrderBase):
         # the grid spacing. Therefore skip the convolution step if we have
         # values smaller than this.
         # FFT and convolve operations
-        if p.delR < 0.0:
-            raise C.ModelError("delR must be positive")
-        elif p.delR < 0.01:
-            # Skip the delR taper due to instrumental effects
-            eigenspectra_full = self.EIGENSPECTRA.copy()
-        else:
-            FF = np.fft.rfft(self.EIGENSPECTRA, axis=1)
+        FF = np.fft.rfft(self.EIGENSPECTRA, axis=1)
 
-            sigma = 299792.46/p.delR / 2.35 # in km/s
-            taper = np.exp(-2 * (np.pi ** 2) * (sigma ** 2) * (self.ss ** 2))
-            FF_tap = FF * taper
+        #delR is now rebranded as deltaV, the FWHM of velocity resolution
+        sigma = p.delR / 2.35 # in km/s
+        taper = np.exp(-2 * (np.pi ** 2) * np.sign(sigma)*(sigma ** 2) * (self.ss ** 2))
+        FF_tap = FF * taper
 
-            # do ifft
-            eigenspectra_full = np.fft.irfft(FF_tap, self.pca.npix, axis=1)
+        # do ifft
+        eigenspectra_full = np.fft.irfft(FF_tap, self.pca.npix, axis=1)
 
         # Spectrum resample operations
         if min(self.wl) < min(wl_FFT) or max(self.wl) > max(wl_FFT):
