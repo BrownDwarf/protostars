@@ -1,7 +1,10 @@
 Things to say in the paper:
-
+- **Introduction**:
+  - [ ] What independent evidence is there that S68N is part of the cloud? (maybe for introduction?)
+- **Observations**:
+  - [x] Description of Keck NIRSPEC data
 - **Methodology**:  
-  - Composite spectrum forward model and assumptions:  
+  - [x] Composite spectrum forward model and assumptions:  
     - Phoenix model for photosphere
     - Temperature range.
     - Disk veiling is black body
@@ -15,18 +18,26 @@ Things to say in the paper:
     - Nuisance parameters-- correlated residual spectrum
     - No pixel-to-pixel variance available, assume S/N = 30
     - Motivation for priors / empirical Bayes / Physics
-  - Basic MCMC stuff
+  - [x] Basic MCMC stuff
 - **Results**: from spectral inference
-  - Low gravity
-  - Solid angle ratio
-  - High extinction
-  - Reasonable Effective Temperature
-  - No preferred BB temperature
-  - No preferred reddening power law
-  - Comparison to evolutionary models
-  - Comparison to data from IN-SYNC and Doppman et al.
+  - [x] Low gravity
+  - [ ] Solid angle ratio
+  - [ ] High extinction
+  - [x] Reasonable Effective Temperature
+  - [ ] No preferred BB temperature
+  - [ ] No preferred reddening power law
+  - [x] Comparison to evolutionary models
+  - [x] Comparison to data from IN-SYNC and Doppmann et al.
+  - [ ] Equilibrium temperature of a dust grain / simplistic ring model
 - **Discussion**:
-  - Limitations of the assumptions
-  - What independent evidence is there that S68N is part of the cloud?
-  - Robustness of the results in the face of limitations
-  - Forward model of observations with JWST?
+  - [x] Limitations of the assumptions
+  - [ ] Extra correlated noise source?
+  - [ ] Robustness of the results in the face of limitations
+  - [ ] Forward model of observations with JWST?
+- **Appendix**:
+  - [ ] Modifications to inference framework
+- **Tables**:
+  - [ ] List of model parameters and their interpretation
+  - [ ] *(deprecated)*: List of experiments
+  - [ ] List of median and 16th-84th percentiles of marginal distributions
+  - [ ] etc.
