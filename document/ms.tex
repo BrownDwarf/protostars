@@ -19,10 +19,11 @@
  
 \title{Near infrared spectrum of a Class 0 protostar photosphere}
 
-\author{T.B. Determined,\altaffilmark{1}}
-
-
-\altaffiltext{1}{NASA Ames}
+\author{Thomas P. Greene, Michael A. Gully-Santiago}
+\affil{NASA Ames Research Center, Space Science and Astrobiology Division, 
+M.S. 245-6; Moffett Field, CA 94035}
+\author{M. Barsony}
+\affil{SETI}
 
 \begin{abstract}
 We measure the stellar photosphere of a Class 0 protostar.
@@ -35,13 +36,18 @@ We measure the stellar photosphere of a Class 0 protostar.
 
 \section{Introduction}\label{sec:intro}
 
-\textbf{todo: T.P.G text}
+\textbf{todo: T.P.G introductory text}
 
 \section{Observations}
-The observations of S68N were carried out with NIRSPEC on the Keck telescope over 5 epochs from 2003-2014.  The \texttt{NIRSPEC-7} filter provided 1.84$-$2.63 $\mu$m wavelength range, with native spectral resolution of $R=1250$ from a 0\farcs76 (4 pixels) $\times$ 42\farcs0 slit.  The individual epochs were coadded to form a single composite spectrum of signal to noise ratio $S/N\sim30$ per pixel.
+The observations of S68N were carried out with NIRSPEC on the Keck telescope over 5 epochs from 2003-2014.  The \texttt{NIRSPEC-7} filter provided 1.84$-$2.63 $\mu$m wavelength range, with native spectral resolution of $R \equiv \frac{\lambda}{\delta \lambda} =1250$ from a 0\farcs76 (4 pixels) $\times$ 42\farcs0 slit.  The individual epochs were coadded to form a single composite spectrum of signal to noise ratio $S/N\sim30$ per pixel.
 
 The reduced spectrum contained H$_2$ lines indicative of excited gas emission.These lines were fitted and removed from the spectrum to produce a composite sprectrum assumed to possess only stellar photosphere and circumstellar disk emission.
 
+\textbf{todo: T.P.G data reduction text:}
+\begin{enumerate}
+	\item Night sky lines as possible correlated residual structure
+	\item etc.
+\end{enumerate}
 
 \section{Method}
 
@@ -49,96 +55,134 @@ Our analysis approach involves Bayesian forward modeling of the observed spectru
 
 \subsection{Composite spectrum forward model}
 
-We assume that stellar photosphere and warm circumstellar disk emission dominate the radiation in the near-IR $K-$band.  We constructed a forward model for the observed Keck spectrum using the spectral inference framework \texttt{Starfish} from \citet{czekala15} with support for mixture model modifications similar to \citet{2017ApJ...836..200G}.  The mixture model for S68N's Keck spectrum is:
+We assume that stellar photosphere and warm circumstellar disk emission dominate the radiation in the near-IR $K-$band.  We constructed a forward model for the observed Keck spectrum using the spectral inference framework \texttt{Starfish} from \citet[hereafter \texttt{C15}]{czekala15} with support for mixture model modifications similar to \citet{2017ApJ...836..200G}.  The mixture model for S68N's Keck spectrum is:
 
 \begin{eqnarray} \label{eqn:mix_M}
-	S_{\lambda, \mathrm{mix}} = \Omega_{\mathrm{\star}} I_{\lambda}(\teffa)  + \Omega_{\mathrm{d}} B_{\lambda}(\teffb)
+	S_{\lambda, \mathrm{mix}} = \Omega_{\mathrm{\star}} I_{\lambda}(\vt_{\ast})  + \Omega_{\mathrm{d}} B_{\lambda}(\teffb)
 \end{eqnarray}
-where $I_{\lambda}(\teffa)$ and $B_{\lambda}(T)$ are spectral irradiances as a function of temperature for the star and disk respectively.  Assuming the star and disk emission originate at the same distance $d$, the ratio of solid angles relates the projected area of the emission regions.
+where $\vt_{\ast} = (\teff, \logg, \Z)$ are the protostellar photospheric parameters, and $I_{\lambda}$ and $B_{\lambda}$ are spectral irradiances for the star and disk respectively.  Assuming the star and disk emission originate at the same distance $d$, the ratio of solid angles relates the projected area of the emission regions.
 \begin{eqnarray} \label{eqn:fill_factor}
 	\frac{\Omega_d}{\Omega_\star} = \frac{A_d d^2}{A_\star d^2} = \frac{A_d}{A_\star}
 \end{eqnarray}
 
-We model the protostellar spectral radiance $I_{\lambda}(T_\star)$ with \PHOENIX\ synthetic model spectra \citep{husser13} possessing an unknown-but-low surface gravity $\logg \in [2.0,4.0]$ in cm$/$s$^2$ and an effective temperature $\teffa \in [2700,3600]$ K.  The circumstellar disk irradiance is assumed to be black body, with a temperature range $\teffb \in [1000,1500]$ K capped by the temperature at which typical dust sublimates.
+We model the protostellar spectral radiance $I_{\lambda}(T_\star)$ with \PHOENIX\ synthetic model spectra \citep{husser13} possessing an unknown-but-low surface gravity $\logg \in [2.0,4.0]$ in cm$/$s$^2$ and an effective temperature $\teffa \in [2700,3600]$ K.  We assume metallicity is negligibly close to solar.  The circumstellar disk irradiance is assumed to be black body, with a temperature range $\teffb \in [1000,1500]$ K capped by the temperature at which typical dust sublimates.
 
-The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and potentially irretrievable---way.  We characterize the reddening with an $A_K$ and a power law slope:
+The radiated spectrum passes through an unknown amount of extinction and scattering, altering its spectral shape in an uncertain---and potentially irretrievable---way.  Nevertheless, we characterize the reddening with an $A_K$ and a power law slope:
 
 $$ A_\lambda / A_K = \frac{\lambda}{2.2 \; \mu\mathrm{m}}^{-\alpha}$$
 
-with $\alpha \in [1.7, 2]$ representing the power law exponent that may depend on dust properties and degree of extinction \textbf{cite}.  
+with $\alpha \in [1.7, 2]$ representing the power law exponent that may depend on dust properties and degree of extinction \citep{2005MNRAS.359..589M}.  
 
-The wavelength-domain follows a similar scaling to \citet{czekala15}, with slight modification.  Here we remove the $\vsini$ broadening kernel, since the $R\sim1250$ spectral resolution is too low to provide a meaningful constraint on projected stellar rotation.  Instead, we replace $\vsini$ with a nuisance parameter to characterize the uncertainty in effective instrumental spectral resolution broadening kernel $\mathcal{F}_v^{\rm inst}$, parameterized as small perturbations from our estimated instrumental resolution $R_{\mathrm{net}} = (1250^{-2} + \delta R^{-2} )^{-1/2}$.  The instrumental-broadened mixture model is then:
+The wavelength-domain follows a similar scaling to \citet{czekala15}, with slight modification.  Here we remove the $\vsini$ broadening kernel, since the $R\sim1250$ spectral resolution is too low to provide a meaningful constraint on projected stellar rotation.  Instead, we replace $\vsini$ with a nuisance parameter to characterize the uncertainty in effective instrumental spectral resolution broadening kernel $\mathcal{F}_v^{\rm inst}$, parameterized as small perturbations from our estimated instrumental resolution $\delta v_{\mathrm{eff}}^2 = (240 \; \mathrm{km \;s}^{-1})^2 \pm \epsilon^2$.  The instrumental-broadened mixture model is then:
 
 \begin{equation} \label{eqn:broadening}
-S_{\lambda, \mathrm{mix}}(\vt_{\ast}, \sigma_v, v_r) = \flam(\vt_{\ast}) \ast \mathcal{F}_v^{\rm inst} \ast \mathcal{F}_v^{\rm dop}
+S(\vt_{\ast}, \delta v, v_r) = S_{\lambda, \mathrm{mix}} \ast \mathcal{F}_v^{\rm inst} \ast \mathcal{F}_v^{\rm dop}
 \end{equation} 
 
-The Dopler shift is similarly treated as a nuisance parameter, but is nonetheless included in the model to provide robustness in the face of imperfect instrumental calibration.  Extinction and re-sampling proceed identically to \citet{czekala15}.
+The Doppler shift is similarly treated as a nuisance parameter, but is nonetheless included in the model to provide robustness in the face of imperfect instrumental calibration.  We also apply a third order Chebyshev polynomial with parameters $c^i$, and the same flexible covariance matrix $\vC$ as in \texttt{C15}.  Extinction and re-sampling proceed identically to \texttt{C15} to produce a pixel-level forward model $\vM$, containing 16 parameters.
 
-We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  We see H$_2$ emission lines in the $K-$band spectrum of S68N, so some degree of accretion is likely ongoing, potentially contributing non-negligible veiling in the photospheric absorption lines.  In any case, the limited spectral information available does not permit a more detailed treatment of accretion or disk gas emission as is possible with higher spectral resolution \citep[][\emph{e.g.}]{2016ApJ...826..179L}.  
+We assume there is zero emission attributable to mass accretion onto the star or disk.  This assumption almost certainly fails for Class 0 protostars, which are still actively accreting a large fraction of their mass.  See \S \ref{sec:discussion} for discussion of the limitations of the model assumptions.
 
 \subsection{MCMC details}
 
-We used MCMC ensemble sampling to deliver a joint posterior probability distribution function for the astrophysical, instrumental, and nuissance parameters.  The method employed `emcee` \citep{foreman13} to provide resilience against sampling strongly degenerate parameters such as solid angles and temperatures of the mixture model.  We ran the MCMC sampler with 5000 steps and 40 walkers, selecting the final $\sim200-1000$ steps as adequately devoid of hysteresis from initial conditions.
+We used MCMC ensemble sampling to deliver a joint posterior probability distribution function for the astrophysical, instrumental, and nuissance parameters.  The method employs \texttt{emcee} \citep{foreman13} to provide resilience against sampling strongly degenerate parameters such as solid angles and temperatures of the mixture model.  We ran the MCMC sampler with 5000 steps and 40 walkers, selecting the final $\sim200-1000$ steps as adequately devoid of hysteresis from initial conditions.
 
 \section{Results}
 
+\subsection{Reasonable Effective Temperature}
+The \citet{baraffe15} model tracks do not extend to ages $<1 $ Myr, but we expect the range of effective temperatures at such young ages to be comparable to the projections at 1 Myr based on extensions to the Hayashi track.  If so, the range of temperatures derived for S68N place it in the expected range of protostars.  Notably, we only searched for effective temperatures in the range $\teff \in [2700,3600] \; \mathrm{K}$, so our method was unable to probe higher or lower possible temperatures.  However our posterior samples do not ``pile-up'' near the parameter ranges as one would observe in an overly-restrictive parameter range.  Instead our smooth posterior places most of its support in the middle of the effective temperature range.
+
 \subsection{Low inferred surface gravity and comparison to evolutionary models}
 
-We find a surface gravity in the range of $\logg = 2.x-3.x$, marginalizing over all other (uncertain) stellar, disk, and nuissance parameters.  This low alebit uncertain surface gravity firmly places the object in the realm of low mass protostars-- still undergoing gravitational contraction and accretion, and therefore possessing a relatively large radius with only a faction of its fated stellar mass.  Figure \ref{fig:theory_v_obs} shows a two panel plot of the joint posterior on stellar surface gravity and effective temperature.  Theoretical pre-main sequence stellar evolutionary model tracks computed for ages $>1$ Myr \texttt{baraffe15} occupy regions with $2800 < \teff (\mathrm{K}) < 4000$ and $3.3<\logg$.  Surface gravities lower than this 3.3 threshold should presumably be less evolved and younger protostars.  Observations roughly agree.  For example, the $\sim 2$ Myr IC348 occupies a space around $3.3 < \logg <4.2$, while the $\sim 120 Myr$ Pleiades resides around $\logg\sim 4.5$, with warmer average temperatures.  Class I protostars \citep{2005AJ....130.1145D} occupy a broad range of measured and constrained effective temperatures and surface gravities, with relatively large uncertainties owing to the difficulty of simultaneously assigning surface gravity in the face of uncertain veiling measurements. 
+We find a surface gravity in the range of $\logg = 2.x-3.x$, marginalizing over all other (uncertain) stellar, disk, and nuissance parameters.  This low alebit uncertain surface gravity places the object in the realm of low mass protostars-- still undergoing gravitational contraction and accretion, and therefore possessing a relatively large radius with only a faction of its fated stellar mass.  Figure \ref{fig:theory_v_obs} shows a two panel plot of the joint posterior on stellar surface gravity and effective temperature.  Theoretical pre-main sequence stellar evolutionary model tracks computed for ages $>1$ Myr \citep{baraffe15} occupy regions with $2800 < \teff (\mathrm{K}) < 4000$ and $3.3<\logg$.  Surface gravities lower than this 3.3 threshold should presumably be less evolved and younger protostars.  Observations roughly agree.  For example, the $\sim 2$ Myr IC348 occupies a space around $3.3 < \logg <4.2$, while the $\sim 120 Myr$ Pleiades resides around $\logg\sim 4.5$, with warmer average temperatures.  Class I protostars \citep{2005AJ....130.1145D} occupy a broad range of measured and constrained effective temperatures and surface gravities, with relatively large uncertainties owing to the difficulty of simultaneously assigning surface gravity in the face of uncertain veiling measurements. 
 
 The joint, marginalized, posterior probability distribution for S68N is shown in the right panel of Figure \ref{fig:theory_v_obs}.  The majority of probability density is below all previous measurements.
 
-\subsection{Reasonable Effective Temperature}
-%TODO, maybe move to above section
 
-\begin{figure*}[b]
+\begin{figure}
  \centering
- \includegraphics[width=0.85\textwidth]{figures/Class0_Teff_logg_2panel.pdf}
- \caption{Pre-main sequence and protostar evolution comparison between theory (left panel) and obseration (right panel).  The 0.02$-$1.2 $M_{\odot}$ evolutionary model tracks are from \citet{baraffe15}, spanning 1 Myr to 100 Myr isochrones; protostars are expected to sit below the 1 Myr isochrone in the region of parameter space demarcated with a yellow dashed ellipse.  The observations show coarse agreement with the models-- measurements of the Pleiades from \citet[green KDE]{cottaar14} cluster around the 100 Myr isochrone, although extend into higher-than-predicted $\log{g}$ for hotter stars.  The younger IC348 sources \citep[purple KDE]{cottaar14} cluster with a large spread above and below the $\sim10$ Myr isochrone.  The source S 68N has a broad posterior PDF placing its maximum a-posteriori estimate inside the range of protostars.  The black dots are Class I protostars from \citet{2005AJ....130.1145D}, showing a large range in measured properties with relatively large uncertainties in $\log{g}$.}  
+ \includegraphics[width=1.0\columnwidth]{figures/Class0_Teff_logg_2panel.pdf}
+ \caption{Pre-main sequence and protostar evolution comparison between theory (left panel) and obseration (right panel).  The 0.02$-$1.2 $M_{\odot}$ evolutionary model tracks are from \citet{baraffe15}, spanning 1 Myr to 1 Gyr isochrones; protostars are expected to sit below the 1 Myr isochrone in the region of parameter space demarcated with a yellow dashed ellipse.  The observations show coarse agreement with the models-- measurements of the Pleiades from \citet[green KDE]{cottaar14} cluster around the 100 Myr isochrone, although extend into higher-than-predicted $\log{g}$ for hotter stars.  The younger IC348 sources \citep[purple KDE]{cottaar14} cluster with a large spread above and below the $\sim10$ Myr isochrone.  The source S 68N has a broad posterior PDF placing its maximum a-posteriori estimate inside the range of protostars.  The black dots are Class I protostars from \citet{2005AJ....130.1145D}, showing a large range in measured properties with relatively large uncertainties in $\log{g}$.}  
  \label{fig:theory_v_obs}
-\end{figure*}
+\end{figure}
 
 
 \subsection{Constraints on disk/envelope emission}
 
-The observed S68N spectrum supports non-zero veiling from an extra smooth emission component, presumably either a circumstellar disk or envelope reradiating reprocessed starlight.  The simplistic black body model allows the construction of the relative emitting areas of disk to star.  from the solid 
+The observed S68N spectrum is consistent with modest veiling from an extra smooth emission component, presumably either a circumstellar disk or envelope reradiating reprocessed starlight.  The traditional observational metric for assessing veiling is the so-called $r_\lambda$-factor, the ratio of disk to photospheric flux, with the photospheric flux usually defined as the continuum.  The right thing to do would be to compute the veiling by integrating the ratios of our forward modeled disk and photosphere spectrum over a relevant filter curve:
 
-\subsection{High extinction}
+\begin{eqnarray}
+r_{K} &=& \int_{K} \frac{f_{d}}{f_{\star}} t(\lambda) d\lambda
+\end{eqnarray}
 
+where $t(\lambda)$ is the normalized wavelength-dependent transmission of the filter.  In practice our observation band does not extend to the ends of $K-$band, so the accuracy of such an estimate would be limited to our projected flux ratio outside the observation window.  So instead, we simply report the median pixel of the $r_\lambda$ vector in our band $\hat r_K = r_\lambda |_{50\%}$, which coarsely approximates $r_K$.  In practice, the distribution of $\hat r_K$ is much larger than the uncertainty attributable to this approximation.  We find a distribution of $\hat r_K \in [0, 0.4]$, with a peak near 0.
 
+The simplistic black body model allows the construction of the relative emitting areas of disk to star as defined in Equation \ref{eqn:fill_factor}.  The relative areas are strongly dependent upon the assumptions of the effective temperatures of the star and disk.  Figure \ref{fig:omega_rat} demonstrates one projection of the degenerate hyperspace relating disk temperature, solid angle ratio, and $\hat r_K$.  Disk temperatures of $T_d \sim 1500\;(\mathrm{K})$ result in emitting areas of the disk comparable to the projected area of the stellar photosphere, and providing much less disk flux than photosphere flux.  
 
-
-\begin{figure*}
+\begin{figure}
  \centering
- \includegraphics[width=0.85\textwidth]{figures/S68N_spectrum.pdf}
- \caption{Observed and modeled spectrum of S68N with residual noise spectrum.}
- \label{fig:S68N_spectrum}
-\end{figure*}
-
-
-Here is another new figure:
-\begin{figure*}
- \centering
- \includegraphics[width=0.85\textwidth]{figures/r_K_vs_Omega.pdf}
+ \includegraphics[width=0.85\columnwidth]{figures/r_K_vs_Omega.pdf}
  \caption{The projected joint distribution of $\hat r_K$ with disk to star solid angle ratio and characteristic disk temperature.}
  \label{fig:omega_rat}
-\end{figure*}
+\end{figure}
+
+
+\subsection{High extinction}
+The Keck NIRSPEC spectrum of S68N shows a spectral flux density increasing with wavelength.  The Phoenix photopheric model predicts a spectral flux density decreasing with wavelength for the range of best fit photospheric temperatures.  The red slope indicates a high degree of reddening.  Our posterior constraints confirm large values of extinction indicative of either a highly embedded source or a background object.  Figure \ref{fig:A_K_plot} shows the joint constraint on $A_K$ and $\alpha$, the power law extinction slope.  
+
+\begin{figure}
+ \centering
+ \includegraphics[width=0.85\columnwidth]{figures/AK_alpha.pdf}
+ \caption{Extinction and power law slope distributions, with effective temperature dependence.}
+ \label{fig:A_K_plot}
+\end{figure}
+
+
+\begin{figure}
+ \centering
+ \includegraphics[width=0.85\columnwidth]{figures/S68N_spectrum.pdf}
+ \caption{Observed and modeled spectrum of S68N with residual noise spectrum.}
+ \label{fig:S68N_spectrum}
+\end{figure}
 
 
 
 \begin{figure}
  \centering
- \includegraphics[width=0.45\textwidth]{../plots/logg_omega_phys.pdf}
+ \includegraphics[width=0.85\columnwidth]{../plots/logg_omega_phys.pdf}
  \caption{Posterior probability distribution function from Experiment 3, Run1, marginalized over all stellar and nuisance parameters except $\logg$ and $\Omega_d/\Omega_\star$.  The surface gravity correlates with the solid angle ratio since both of these factors affect the CO line depths.  Lines of differing stellar mass and disk radii are shown for a range of stellar radii.}
  \label{fig:posterior_loggOmega}
 \end{figure}
 
 
+%Table
+~\clearpage
+
+\begin{tabular}{lp{3cm}rrr}
+\hline
+\multicolumn{4}{c}{Marginal PDF} \\
+\cline{3-5}
+Parameter & Description & $|_{16\%}$& Median & $|_{84\%}$ \\
+\hline
+$\teff$   & Stellar effective temperature  (K) &   3000 & 3200 & 3600  \\
+$\logg$   & Surface gravity & 2 & 3 & 4 \\
+$\Z$   & Metallicity & - & - & - \\
+$v_r$   & Velocity error & - & - & - \\
+$\epsilon$   & Resolution error & - & - & - \\
+$\Omega_\star/\Omega_d$   & Star/Disk solid angle ratio  & - & - & - \\
+$\hat r_K$   & Estimated $K-$band veiling  & - & - & - \\
+$T_d$   & Black body disk temperature & - & - & - \\
+$A_K$   & $K-$band extinction & - & - & - \\
+$\alpha$   & Exponent of reddening law & - & - & - \\
+$a_{\rm G}$   & GP covariance kernel amplitude & - & - & - \\
+$\ell$   & GP covariance kernel scale length & - & - & - \\
+\hline
+\end{tabular}
+
 ~\clearpage
 
 
-\section{Discussion}
+\section{Discussion}\label{sec:discussion}
 
 Our spectral inference methodology made some necessary simplifying assumptions in order to assess the relative strengths of the components giving rise to the observed, composite Keck NIRSPEC spectrum of S68N.  Below we list the assumptions in order of how \emph{strong} they are, and gauge their impact on our results.  
 
@@ -152,11 +196,12 @@ Our spectral inference methodology made some necessary simplifying assumptions i
 \item Metallicity departs negligibly from Solar.
 \end{enumerate}
 
-We know other emission sources, beyond quiescent photosphere and disk.  The raw spectrum of S68N shows H$_2$ emission lines indicative of either shocked material or accretion.  Higher spectral resolution observations of protostars have shown CO emission \texttt{cite- seokho lee, etc.}.  With our NIRSPEC observations alone, it is impossible to assess whether CO emission partially fills in the CO lines at $2.3-2.4 \;\mu$m.  Such line veiling would tend to reduce the equivalent widths of the CO lines, and bias our accretion-free estimate towards either \emph{higher} surface gravity or \emph{higher} veiling.  In other words, the ``true'' surface gravity and veiling is lower than our posterior would suggest.  We already derive a very low surface gravity, so it would be hard to imagine an even lower number, reinforcing our assumption in the first place.
+We know other emission sources, beyond quiescent photosphere and disk.  The raw spectrum of S68N shows H$_2$ emission lines indicative of either shocked material or accretion.  Higher spectral resolution observations of protostars have shown CO emission \citep{2016ApJ...826..179L}.  With our NIRSPEC observations alone, it is impossible to assess whether CO emission partially fills in the CO lines at $2.3-2.4 \;\mu$m.  Such line veiling would tend to reduce the equivalent widths of the CO lines, and bias our presumed accretion-free estimate towards either \emph{higher} surface gravity or \emph{higher} veiling.  In other words, the ``true'' surface gravity and veiling is lower than our posterior would suggest.  We already derive a very low surface gravity, so it would be hard to imagine an even lower number, reinforcing our assumption in the first place.
+
 
 Our model employs spectrally emulated Phoenix models to simulate the photospheric emission of S68N.  Template photospheres of Class 0 protostars are not yet available due to the prohibitive difficulty of observations with existing facilities and high veiling.  Protostellar photospheric emission could depart from Phoenix models based on non-standard physics not currently included in the stellar atmospheric modelling.  For example strong magnetic fields, starspots, and other factors would alter the photospheric emergent spectrum's appearance from what we have assumed here.  These non-standard physical phenomena would largely impact relatively weak features of the spectral mostly perceptible at higher spectral resolution.  A large coverage fraction of cool starspots could distort our derived protostellar solid angle towards lower values and higher effective temperatures than reality.  The physical effects of starspots on more evolved Class II and Class III stars are still actively being studied \texttt{cite gully-santiago, fang, etc.}, so it is not clear how Class 0 protostars compare.  
 
-We have assumed the disk radiates as a black body of a single temperature.  More accurate estimates for the disk emission and geometries could be obtained from rigorous radiative transfer methods \citep[\emph{e.g.}]{2017arXiv170305765R}; no such advanced disk modeling was attempted.  The relatively narrow $K-$ observation band does not offer a large enough lever arm to distinguish the nearly degenerate effects of elevated disk temperature versus increased solid angle of emission.  It is unlikely that our limited spectral-grasp data would be able to place informative constraints on even more disk properties, nor would those revised models improve our fit quality significantly.  Although the black body model was a simplifying assumption, it has produced a reasonable solid angle ratio posterior distribution.
+We have assumed the disk radiates as a black body of a single temperature.  More accurate estimates for the disk emission and geometries could be obtained from rigorous radiative transfer methods \citep[][\emph{e.g.}]{2017arXiv170305765R}; no such advanced disk modeling was attempted.  The relatively narrow $K-$ observation band does not offer a large enough lever arm to distinguish the nearly degenerate effects of elevated disk temperature versus increased solid angle of emission.  It is unlikely that our limited spectral-grasp data would be able to place informative constraints on even more disk properties, nor would those revised models improve our fit quality significantly.  Although the black body model was a simplifying assumption, it has produced a reasonable solid angle ratio posterior distribution.
 
 We have assumed the disk and protostar undergo the same extent and wavelength-dependence of extinction.  In principle, the starlight pass through a flared circumestellar disk or envelope, while the disk emission passess through relatively less (or more) material, causing differential extinction between disk and star.  The relatively small solid angle ratio of the disk suggests that if the disk emitting material is distributed in an azimuthally symmetric ring around the star, the disk should be quite close to the protostellar surface, reinforcing our assumption that the emission sources pass through the same material.
 
@@ -164,7 +209,7 @@ We have assumed the disk and protostar undergo the same extent and wavelength-de
 
 \subsection{Simulated JWST Observations of S68N}
 
-Below is a simulated spectrum of S68N with the JWST NIRSPEC IFU with the G235M grating providing $R\sim1000$ across $1.7-3.0 \; \mu$m, with a $S/N \sim 100$ per pixel.  
+Below is a simulated spectrum of S68N with the JWST NIRSpec IFU with the G235M grating providing $R\sim1000$ across $1.7-3.0 \; \mu$m, with a $S/N \sim 100$ per pixel.  
 
 \begin{figure}
  \centering
