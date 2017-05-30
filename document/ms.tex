@@ -155,6 +155,17 @@ The Keck NIRSPEC spectrum of S68N shows a spectral flux density increasing with 
 \end{figure}
 
 
+\subsection{SMM1}
+We also performed spectral inference on the source SMM1, a less embedded protostar showing less-conspicuous CO lines in its NIRSPEC $K-$band spectrum.  The conditions of the inference we identical to those of S68N, namely the same stellar and nuissance parameter ranges and priors.  We ran the MCMC sampling for a total of 20000 steps, discarding the first 15000 as burn-in.  Figure \ref{fig:SMM1_spectrum} shows the spectrum of SMM1 with a model spectrum possessing parameters randomly chosen from its posterior samples.
+
+\begin{figure}
+ \centering
+ \includegraphics[width=0.85\columnwidth]{figures/SMM1_spectrum.pdf}
+ \caption{Observed and modeled spectrum of SMM1 with residual noise spectrum.}
+ \label{fig:SMM1_spectrum}
+\end{figure}
+
+
 %Table
 ~\clearpage
 
@@ -166,7 +177,6 @@ Parameter & Description & $|_{16\%}$& Median & $|_{84\%}$ \\
 \hline
 $\teff$   & Stellar effective temperature  (K) &   3000 & 3200 & 3600  \\
 $\logg$   & Surface gravity & 2 & 3 & 4 \\
-$\Z$   & Metallicity & - & - & - \\
 $v_r$   & Velocity error & - & - & - \\
 $\epsilon$   & Resolution error & - & - & - \\
 $\Omega_\star/\Omega_d$   & Star/Disk solid angle ratio  & - & - & - \\
